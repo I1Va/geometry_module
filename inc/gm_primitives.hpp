@@ -244,7 +244,7 @@ public:
 
 // ALIASES
 template<typename T, size_t N>
-using gm_dot = gm_vector<T, N>;
+using gm_point = gm_vector<T, N>;
 
 
 
