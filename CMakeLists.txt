@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(geometry_module LANGUAGES CXX)
 
 add_library(geometry_module STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/gm_vector.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gm_primitives.cpp
 )
 
 target_include_directories(geometry_module
