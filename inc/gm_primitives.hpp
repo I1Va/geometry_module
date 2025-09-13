@@ -4,19 +4,20 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
-
+#include <cassert>
 
 // VECTOR
-template<typename T, std::size_t N>
+template<typename T, std::size_t N, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
 class gm_vector {};
 
 template<typename T>
 class gm_vector<T, 2> {
     T x, y;
     T len2;
+    bool poison_state;
 public:
-    gm_vector(T x = 0, T y = 0): x(x), y(y), len2(NAN) {}
-    explicit gm_vector(T cord): x(cord), y(cord), len2(NAN) {}
+    gm_vector(T x = 0, T y = 0): x(x), y(y), len2(NAN), poison_state(false) {}
+    explicit gm_vector(T cord): x(cord), y(cord), len2(NAN), poison_state(false) {}
 
     template<typename U, typename = std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value>>
     gm_vector(const gm_vector<U, 3>& other):
@@ -25,19 +26,40 @@ public:
         z(static_cast<T>(other.z)),
         len2(static_cast<T>(other.len2)) {};
 
+    bool is_valid() const {
+        if (!std::isnan(len2))
+            return x * x + y * y == len2;
+        if (poison_state && (std::isnan(x) || std::isnan(y)))
+            return false;
+    }
+
+    static gm_vector<T, 3> POISON() {
+        gm_vector<T, 3> poison_vector(NAN, NAN);
+        poison_vector.poison_state = true;
+
+        return poison_vector;
+    }
+
+    bool is_poison() const { return poison_state; }
+
     gm_vector<T, 2> operator+(const gm_vector<T, 2> &other) const {
+        assert(is_valid());
         return gm_vector<T, 2>(x + other.x, y + other.y);
     }
 
     gm_vector<T, 2> operator-(const gm_vector<T, 2> &other) const {
+        assert(is_valid());
         return gm_vector<T, 2>(x - other.x, y - other.y);
     }
 
     gm_vector<T, 2> operator*(const T scalar) const {
+        assert(is_valid());
         return gm_vector<T, 2>(x * scalar, y * scalar);
     }
 
     gm_vector<T, 2> operator=(const gm_vector<T, 2> &other) {
+        assert(is_valid());
+
         x = other.x;
         y = other.y;
         len2 = other.len2;
@@ -46,6 +68,8 @@ public:
     }
 
     gm_vector<T, 2> operator+=(const gm_vector<T, 2> &other) {
+        assert(is_valid());
+
         len2 = NAN;
         x += other.x;
         y += other.y;
@@ -53,6 +77,8 @@ public:
     }
 
     gm_vector<T, 2> operator-=(const gm_vector<T, 2> &other) {
+        assert(is_valid());
+
         len2 = NAN;
         x -= other.x;
         y -= other.y;
@@ -60,15 +86,22 @@ public:
     }
 
     gm_vector<T, 2> operator*=(const T scalar) {
-         len2 *= scalar; 
+        assert(is_valid());
+
+        len2 *= scalar; 
         x *= scalar;
         y *= scalar;
         return *this;   
     }
 
-    gm_vector<T, 3> to_3d() const { return gm_vector<T, 3>(x, y, 0); }
+    gm_vector<T, 3> to_3d() const {
+        assert(is_valid());
+        return gm_vector<T, 3>(x, y, 0); 
+    }
 
     gm_vector<double, 2> rotate(const double radians) const {
+        assert(is_valid());
+
         double x_new = x * std::cos(radians) - y * std::sin(radians);
         double y_new = x * std::sin(radians) + y * std::cos(radians);
 
@@ -76,54 +109,90 @@ public:
     }
 
     T scalar_product(const gm_vector<T, 2> &other) const {
-         return x * other.x + y * other.y;
+        assert(is_valid());
+        assert(other.is_valid());
+        return x * other.x + y * other.y;
     }
 
     inline T get_len2() {
+        assert(is_valid());
         if (std::isnan(len2))
             len2 = x * x + y * y;
         return len2;
     }
 
-    inline T get_x() const { return x; }
-    inline T get_y() const { return y; }
+    inline T get_x() const { 
+        assert(is_valid());
+        return x; 
+    }
+    inline T get_y() const {
+        assert(is_valid());
+        return y; 
+    }
 };
 
 template<typename T>
 class gm_vector<T, 3> {
     T x, y, z;
     T len2;
-public:
-    gm_vector(T x = 0, T y = 0, T z = 0): x(x), y(y), z(z), len2(NAN) {}
-    explicit gm_vector(T cord): x(cord), y(cord), z(cord), len2(NAN) {}
+    bool poison_state;
 
-    template<typename U, typename = std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value>>
+public:
+    gm_vector(T x = 0, T y = 0, T z = 0): x(x), y(y), z(z), len2(NAN), poison_state(false) {}
+    explicit gm_vector(T cord): x(cord), y(cord), z(cord), len2(NAN), poison_state(false) {}
+
+    template<typename U, typename = std::enable_if_t<std::is_arithmetic<U>::value>>
     gm_vector(const gm_vector<U, 3>& other):
         x(static_cast<T>(other.x)),
         y(static_cast<T>(other.y)),
         z(static_cast<T>(other.z)),
         len2(static_cast<T>(other.len2)) {};
 
+    bool is_valid() const {
+        if (!std::isnan(len2))
+            return x * x + y * y + z * z == len2;
+        if (poison_state && (std::isnan(x) || std::isnan(y) || std::isnan(z)))
+            return false;
+    }
 
-    gm_vector<T, 3> operator+(const gm_vector<T, 3> &other) const { 
+    static gm_vector<T, 3> POISON() {
+        gm_vector<T, 3> poison_vector(NAN, NAN, NAN);
+        poison_vector.poison_state = true;
+
+        return poison_vector;
+    }
+
+    bool is_poison() const { return poison_state; }
+
+    gm_vector<T, 3> operator+(const gm_vector<T, 3> &other) const {
+        assert(is_valid());
+
         return gm_vector<T, 3>(x + other.x, y + other.y, z + other.z);
     }
 
     gm_vector<T, 3> operator-(const gm_vector<T, 3> &other) const {
+        assert(is_valid());
+
         return gm_vector<T, 3>(x - other.x, y - other.y, z - other.z);
     }
 
     gm_vector<T, 3> operator*(const T scalar) const {
+        assert(is_valid());
+
         return gm_vector<T, 3>(x * scalar, y * scalar, z * scalar);
     }
 
     gm_vector<double, 3> operator!() {
+        assert(is_valid());
+
         double len = std::sqrt(get_len2());
         len2 = 1.0;
         return gm_vector<T, 3>(x / len, y / len, z / len);
     }
 
     gm_vector<double, 3> operator=(const gm_vector<T, 3> &other) {
+        assert(is_valid());
+
         x = other.x;
         y = other.y;
         z = other.z;
@@ -132,6 +201,8 @@ public:
     }
 
     gm_vector<T, 3> operator+=(const gm_vector<T, 3> &other) {
+        assert(is_valid());
+
         len2 = NAN;
         x += other.x;
         y += other.y;
@@ -140,6 +211,8 @@ public:
     }
 
     gm_vector<T, 3> operator-=(const gm_vector<T, 3> &other) {
+        assert(is_valid());
+
         len2 = NAN;
         x -= other.x;
         y -= other.y;
@@ -148,6 +221,8 @@ public:
     }
 
     gm_vector<T, 3> operator*=(const T scalar) {
+        assert(is_valid());
+
         len2 *= scalar; 
         x *= scalar;
         y *= scalar;
@@ -156,20 +231,59 @@ public:
     }
 
     inline T get_len2() {
+        assert(is_valid());
+
         if (std::isnan(len2))
             len2 = x * x + y * y + z * z;
         return len2;
     }
 
     T scalar_product(const gm_vector<T, 3> &other) const {
+        assert(is_valid());
+        assert(other.is_valid());
+
         return x * other.x + y * other.y + z * other.z;
     }
 
-    inline T get_x() const { return x;}
-    inline T get_y() const { return y;}
-    inline T get_z() const { return z;}
+    T vector_product(const gm_vector<T, 3> &other) const {
+        assert(is_valid());
+        assert(other.is_valid());
+        
+        return geom_vector3(y * other.z - z * other.y,
+                            z * other.x - x * other.z,
+                            x * other.y - y * other.x);
+    }
+
+    template<typename U, typename = std::enable_if_t<std::is_floating_point<U>::value>>
+    gm_vector<U, 3> set_len(U new_len) {
+        assert(is_valid())
+    
+        U prev_len = std::sqrt(len2);
+        x = x / prev_len * new_len;
+        y = y / prev_len * new_len;
+        z = z / prev_len * new_len;
+        len2 = new_len * new_len;
+
+        return *this;
+    }
+
+    inline T get_x() const { 
+        assert(is_valid());
+        return x;
+    }
+
+    inline T get_y() const {
+        assert(is_valid());
+        return y;
+    }
+    inline T get_z() const { 
+        assert(is_valid());
+        return z;
+    }
 
     gm_vector<T, 3> clamp(const T min, const T max) {
+        assert(is_valid());
+
         len2 = NAN;
         return gm_vector<T, 3>
         (
@@ -187,26 +301,33 @@ public:
     template<typename U>
     friend inline gm_vector<U, 3> cord_mul(const gm_vector<U, 3> &a, const gm_vector<U, 3> &b);
 
-    template<typename U>
-    friend inline gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val);
+    template<typename U, typename = std::enable_if_t<std::is_floating_point<U>::value>>
+    friend inline gm_vector<U, 3> cord_pow(const gm_vector<U, 3> &a, const U pow_val);
 
-    friend inline gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val);
 };
 
 
 template<typename T>
 inline std::ostream &operator<<(std::ostream &stream, const gm_vector<T, 3> &vector) {
+    assert(vector.is_valid());
+
     stream << "gm_vector3 {" << vector.x << ", " << vector.y << ", " << vector.z << "}\n";
     return stream;
 }
 
 template<typename T>
 inline gm_vector<T, 3> cord_mul(const gm_vector<T, 3> &a, const gm_vector<T, 3> &b) {
+    assert(a.is_valid());
+    assert(b.is_valid());
+
     return gm_vector<T, 3>(a.x * b.x, a.y * b.y, a.z * b.z);
 }
 
-inline gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val) {
-     return gm_vector<double, 3>
+template<typename U, typename = std::enable_if_t<std::is_floating_point<U>::value>>
+inline gm_vector<U, 3> cord_pow(const gm_vector<U, 3> &a, const double pow_val) {
+    assert(a.is_valid());
+
+    return gm_vector<U, 3>
     (
         std::pow(a.x, pow_val),
         std::pow(a.y, pow_val),
@@ -215,6 +336,9 @@ inline gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double
 }
 
 inline gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<double, 3> b) {
+    assert(a.is_valid());
+    assert(b.is_valid());
+
     double b_len = std::sqrt(b.get_len2());
     double c = (a.scalar_product(b)) / (b_len * b_len);
     return a - b * c;
@@ -223,7 +347,7 @@ inline gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<doub
 
 
 // LINE
-template<typename T, std::size_t N>
+template<typename T, std::size_t N, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
 class gm_line {};
 
 template<>
@@ -234,16 +358,25 @@ public:
     gm_line(gm_vector<double, 3> start, gm_vector<double, 3> direction):
         start(start), direction(direction) {}
     
-    gm_vector<double, 3> get_start() const { return start; }
-    gm_vector<double, 3> get_direction() const { return direction; }
+    bool is_valid() const { return start.is_valid() && direction.is_valid(); }
 
-    friend double get_dot_line_distance(gm_line<double, 3> line, gm_vector<double, 3> dot);
+    gm_vector<double, 3> get_start() const { 
+        assert(is_valid());
+        return start; 
+    }
+
+    gm_vector<double, 3> get_direction() const { 
+        assert(is_valid());
+        return direction; 
+    }
+
+    friend double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
 };
 
 
 
 // SPHERE
-template<typename T, std::size_t N>
+template<typename T, std::size_t N, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
 class gm_sphere {};
 
 template<>
@@ -251,7 +384,29 @@ class gm_sphere<double, 3> {
     gm_vector<double, 3> center;
     double radius;
 public:
-    gm_sphere(gm_vector<double, 3> center, double radius);
+    gm_sphere(gm_vector<double, 3> center, double radius): center(center), radius(radius) {};
+
+    double get_distance2_to_line(const gm_line<double, 3> &ray) {
+        return get_dot_line_distance2(ray, center);
+    }
+
+    gm_vector<double, 3> get_closest_intersection(const gm_line<double, 3> &ray) {
+        double sphere_ray_distance2 = get_distance2_to_line(ray);
+        double radius2 = radius * radius;
+        gm_vector<double, 3> ray_start_to_center = center - ray.get_start();
+
+        if (sphere_ray_distance2 > radius2) return gm_vector<double, 3>::POISON();
+        if (sphere_ray_distance2 == radius2) return ray_start_to_center.get_len2() - radius2;
+        
+        double ray_start_to_center_projection_len = std::sqrt(ray_start_to_center.get_len2() - sphere_ray_distance2);
+        double radius_projection = std::sqrt(radius2 - sphere_ray_distance2);
+        double distance = ray_start_to_center_projection_len - radius_projection;
+
+        gm_vector<double, 3> closest_intersection_direction = ray.get_direction().set_len(distance);
+
+        return ray.get_start() + closest_intersection_direction;
+    }
+
     gm_vector<double, 3> get_center() const { return center; }
     double get_radius() const { return radius; }
 };
@@ -259,13 +414,6 @@ public:
 
 
 // GENERAL FUNCTIONS
-inline double get_dot_line_distance(gm_line<double, 3> line, gm_vector<double, 3> dot) {
-    gm_vector<double, 3> line_direction = line.direction;
-
-    gm_vector<double, 3> start_to_dot = dot - line.start;
-    gm_vector<double, 3> cross_product = start_to_dot.scalar_product(line_direction);
-
-    return cross_product.get_len2() / line_direction.get_len2();
-}
+double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
 
 #endif // GM_VECTOR_HPP
