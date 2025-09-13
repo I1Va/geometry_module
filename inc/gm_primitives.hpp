@@ -18,6 +18,12 @@ public:
     gm_vector(T x = 0, T y = 0): x(x), y(y), len2(NAN) {}
     explicit gm_vector(T cord): x(cord), y(cord), len2(NAN) {}
 
+    template<typename U, typename = std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value>>
+    gm_vector(const gm_vector<U, 3>& other):
+        x(static_cast<T>(other.x)),
+        y(static_cast<T>(other.y)),
+        z(static_cast<T>(other.z)),
+        len2(static_cast<T>(other.len2)) {};
 
     gm_vector<T, 2> operator+(const gm_vector<T, 2> &other) const {
         return gm_vector<T, 2>(x + other.x, y + other.y);
@@ -60,6 +66,8 @@ public:
         return *this;   
     }
 
+    gm_vector<T, 3> to_3d() const { return gm_vector<T, 3>(x, y, 0); }
+
     gm_vector<double, 2> rotate(const double radians) const {
         double x_new = x * std::cos(radians) - y * std::sin(radians);
         double y_new = x * std::sin(radians) + y * std::cos(radians);
@@ -71,14 +79,14 @@ public:
          return x * other.x + y * other.y;
     }
 
-    T get_len2() {
+    inline T get_len2() {
         if (std::isnan(len2))
             len2 = x * x + y * y;
         return len2;
     }
 
-    T get_x() const { return x; }
-    T get_y() const { return y; }
+    inline T get_x() const { return x; }
+    inline T get_y() const { return y; }
 };
 
 template<typename T>
@@ -88,6 +96,14 @@ class gm_vector<T, 3> {
 public:
     gm_vector(T x = 0, T y = 0, T z = 0): x(x), y(y), z(z), len2(NAN) {}
     explicit gm_vector(T cord): x(cord), y(cord), z(cord), len2(NAN) {}
+
+    template<typename U, typename = std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value>>
+    gm_vector(const gm_vector<U, 3>& other):
+        x(static_cast<T>(other.x)),
+        y(static_cast<T>(other.y)),
+        z(static_cast<T>(other.z)),
+        len2(static_cast<T>(other.len2)) {};
+
 
     gm_vector<T, 3> operator+(const gm_vector<T, 3> &other) const { 
         return gm_vector<T, 3>(x + other.x, y + other.y, z + other.z);
@@ -139,7 +155,7 @@ public:
         return *this;
     }
 
-    T get_len2() {
+    inline T get_len2() {
         if (std::isnan(len2))
             len2 = x * x + y * y + z * z;
         return len2;
@@ -149,9 +165,9 @@ public:
         return x * other.x + y * other.y + z * other.z;
     }
 
-    T get_x() const { return x;}
-    T get_y() const { return y;}
-    T get_z() const { return z;}
+    inline T get_x() const { return x;}
+    inline T get_y() const { return y;}
+    inline T get_z() const { return z;}
 
     gm_vector<T, 3> clamp(const T min, const T max) {
         len2 = NAN;
@@ -239,12 +255,6 @@ public:
     gm_vector<double, 3> get_center() const { return center; }
     double get_radius() const { return radius; }
 };
-
-
-
-// ALIASES
-template<typename T, size_t N>
-using gm_point = gm_vector<T, N>;
 
 
 
