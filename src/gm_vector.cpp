@@ -4,27 +4,7 @@
 
 #include "gm_vector.hpp"
 
-template<typename T>
-gm_vector<T, 3> cord_mul(const gm_vector<T, 3> &a, const gm_vector<T, 3> &b) {
-    return geom_vector3(a.x * b.x, a.y * b.y, a.z * b.z);
-}
-
-gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val) {
-    return gm_vector<double, 3>
-    (
-        std::pow(a.x, pow_val),
-        std::pow(a.y, pow_val),
-        std::pow(a.z, pow_val)
-    );
-}
-
-gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<double, 3> b) {
-    double b_len = std::sqrt(b.get_len2());
-    double c = (a.dot(b)) / (b_len * b_len);
-    return a - b * c;
-}
-
-
+// 2D VECTOR
 template<typename T>
 gm_vector<T, 2>::gm_vector(T x, T y) : x(x), y(y), len2(NAN) {}
 
@@ -97,7 +77,7 @@ T gm_vector<T, 2>::get_y() const {
 }
 
 
-
+// 3D VECTOR
 template<typename T>
 gm_vector<T, 3>::gm_vector(T x, T y, T z) : x(x), y(y), z(z), len2(NAN) {}
 
@@ -192,5 +172,52 @@ template<typename T>
 std::ostream &operator<<(std::ostream &stream, const gm_vector<T, 3> &vector) {
     stream << "gm_vector3 {" << vector.x << ", " << vector.y << ", " << vector.z << "}\n";
     return stream;
+}
+
+template<typename T>
+gm_vector<T, 3> cord_mul(const gm_vector<T, 3> &a, const gm_vector<T, 3> &b) {
+    return geom_vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val) {
+    return gm_vector<double, 3>
+    (
+        std::pow(a.x, pow_val),
+        std::pow(a.y, pow_val),
+        std::pow(a.z, pow_val)
+    );
+}
+
+gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<double, 3> b) {
+    double b_len = std::sqrt(b.get_len2());
+    double c = (a.dot(b)) / (b_len * b_len);
+    return a - b * c;
+}
+
+
+// LINE
+
+gm_line<double, 3>::gm_line(gm_vector<double, 3> start, gm_vector<double, 3> direction):
+    start(start), direction(direction) {};
+
+gm_vector<double, 3> gm_line<double, 3>::get_start() const { return start; }
+
+gm_vector<double, 3> gm_line<double, 3>::get_direction() const {return direction; }
+
+
+// SPHERE
+gm_sphere<double, 3>::gm_sphere(gm_vector<double, 3> center, double radius): center(center), radius(radius) {};
+gm_vector<double, 3> gm_sphere<double, 3>::get_center() const { return center; };
+double gm_sphere<double, 3>::get_radius() const { return radius; };
+
+
+// GENERAL FUNCTIONS
+double get_dot_line_distance(gm_line<double, 3> line, gm_vector<double, 3> dot) {
+    gm_vector<double, 3> line_direction = line.direction;
+
+    gm_vector<double, 3> start_to_dot = dot - line.start;
+    gm_vector<double, 3> cross_product = start_to_dot.dot(line_direction);
+
+    return cross_product.get_len2() / line_direction.get_len2();
 }
 
