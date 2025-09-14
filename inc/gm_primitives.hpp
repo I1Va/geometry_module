@@ -73,6 +73,13 @@ public:
         return *this;
     }
 
+    bool operator==(const gm_vector<T, 2> &other) const {
+        assert(is_valid());
+
+        return  (x == other.x) &&
+                (y == other.y);
+    }
+
     gm_vector<T, 2> operator+=(const gm_vector<T, 2> &other) {
         assert(is_valid());
 
@@ -228,6 +235,14 @@ public:
         return *this;
     }
 
+    bool operator==(const gm_vector<T, 3> &other) const {
+        assert(is_valid());
+
+        return  (x == other.x) &&
+                (y == other.y) &&
+                (z == other.z);
+    }
+
     gm_vector<T, 3> operator+=(const gm_vector<T, 3> &other) {
         assert(is_valid());
 
@@ -377,8 +392,8 @@ inline gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<doub
     assert(a.is_valid());
     assert(b.is_valid());
 
-    double b_len = std::sqrt(b.get_len2());
-    double c = (a.scalar_product(b)) / (b_len * b_len);
+    double b_len2 = b.get_len2();
+    double c = (a.scalar_product(b)) / b_len2;
     return a - b * c;
 }
 
@@ -435,7 +450,9 @@ public:
         gm_vector<double, 3> ray_start_to_center = center - ray.get_start();
 
         
-        if (sphere_ray_distance2 > radius2) return gm_vector<double, 3>::POISON();
+        if ((sphere_ray_distance2 > radius2) || ((center - ray.get_start()).scalar_product(ray.get_direction()) < 0))
+            return gm_vector<double, 3>::POISON();
+
         if (sphere_ray_distance2 == radius2) return ray_start_to_center.get_len2() - radius2;
         
         
