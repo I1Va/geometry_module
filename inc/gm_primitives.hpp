@@ -7,9 +7,14 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <type_traits>
 
 // VECTOR
-template<typename T, std::size_t N, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+
+template<typename T>
+concept arithmetic = std::integral<T> || std::floating_point<T>;
+
+template<arithmetic T, std::size_t N>  
 class gm_vector {};
 
 template<typename T>
@@ -22,7 +27,7 @@ public:
     gm_vector(T x = 0, T y = 0): x(x), y(y), valid_len2_state(false), poison_state(false) {}
     explicit gm_vector(T cord): x(cord), y(cord), valid_len2_state(false), poison_state(false) {}
 
-    template<typename U, typename = std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value>>
+    template<arithmetic U>
     gm_vector(const gm_vector<U, 2>& other):
         x(static_cast<T>(other.get_x())),
         y(static_cast<T>(other.get_y())),
@@ -171,7 +176,7 @@ public:
     gm_vector(T x = 0, T y = 0, T z = 0): x(x), y(y), z(z), valid_len2_state(false), poison_state(false) {}
     explicit gm_vector(T cord): x(cord), y(cord), z(cord), valid_len2_state(false), poison_state(false) {}
 
-    template<typename U, typename = std::enable_if_t<std::is_arithmetic<U>::value>>
+    template<arithmetic U>
     gm_vector(const gm_vector<U, 3>& other):
         x(static_cast<T>(other.get_x())),
         y(static_cast<T>(other.get_y())),
@@ -300,7 +305,7 @@ public:
                                 x * other.y - y * other.x);
     }
 
-    template<typename U, typename = std::enable_if_t<std::is_floating_point<U>::value>>
+    template<arithmetic U>
     gm_vector<U, 3> set_len(U new_len) {
         assert(is_valid());
     
@@ -400,7 +405,7 @@ inline gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<doub
 
 
 // LINE
-template<typename T, std::size_t N, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+template<arithmetic T, std::size_t N>
 class gm_line {};
 
 template<>
@@ -408,7 +413,7 @@ class gm_line<double, 3> {
     gm_vector<double, 3> start;
     gm_vector<double, 3> direction;
 public:
-    gm_line(gm_vector<double, 3> start, gm_vector<double, 3> direction):
+    gm_line(const gm_vector<double, 3> &start, const gm_vector<double, 3> &direction):
         start(start), direction(direction) {}
     
     bool is_valid() const { return start.is_valid() && direction.is_valid(); }
@@ -429,7 +434,7 @@ public:
 
 
 // SPHERE
-template<typename T, std::size_t N, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+template<arithmetic T, std::size_t N>
 class gm_sphere {};
 
 template<>
@@ -437,7 +442,7 @@ class gm_sphere<double, 3> {
     gm_vector<double, 3> center;
     double radius;
 public:
-    gm_sphere(gm_vector<double, 3> center, double radius): center(center), radius(radius) {};
+    gm_sphere(const gm_vector<double, 3> &center, const double radius): center(center), radius(radius) {};
 
     double get_distance2_to_line(const gm_line<double, 3> &ray) const {
         return get_dot_line_distance2(ray, center);
