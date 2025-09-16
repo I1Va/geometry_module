@@ -28,7 +28,7 @@ public:
     explicit gm_vector(T cord): x(cord), y(cord), valid_len2_state(false), poison_state(false) {}
 
     template<arithmetic U>
-    gm_vector(const gm_vector<U, 2>& other):
+    gm_vector(gm_vector<U, 2> other):
         x(static_cast<T>(other.get_x())),
         y(static_cast<T>(other.get_y())),
         valid_len2_state(other.get_valid_len2_state()),
