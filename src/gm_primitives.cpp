@@ -20,7 +20,7 @@ double get_dot_line_distance2(gm_line<double, 2> line, gm_vector<double, 2> poin
     gm_vector<double, 2> start_to_dot = point - line.get_start();
     double vector_product_res = start_to_dot.vector_product(line_direction);
 
-    return std::fabs(vector_product_res) / line_direction.get_len2();
+    return vector_product_res * vector_product_res / line_direction.get_len2();
 }
 
 
