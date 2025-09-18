@@ -44,8 +44,8 @@ public:
         return true;
     }
 
-    static gm_vector<T, 3> POISON() {
-        gm_vector<T, 3> poison_vector(0, 0);
+    static gm_vector<T, 2> POISON() {
+        gm_vector<T, 2> poison_vector(0, 0);
         poison_vector.poison_state = true;
 
         return poison_vector;
@@ -374,36 +374,6 @@ inline std::ostream &operator<<(std::ostream &stream, const gm_vector<T, 3> &vec
     return stream;
 }
 
-template<typename T>
-inline gm_vector<T, 3> cord_mul(const gm_vector<T, 3> &a, const gm_vector<T, 3> &b) {
-    assert(a.is_valid());
-    assert(b.is_valid());
-
-    return gm_vector<T, 3>(a.x * b.x, a.y * b.y, a.z * b.z);
-}
-
-inline gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val) {
-    assert(a.is_valid());
-
-    return gm_vector<double, 3>
-    (
-        std::pow(a.x, pow_val),
-        std::pow(a.y, pow_val),
-        std::pow(a.z, pow_val)
-    );
-}
-
-inline gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<double, 3> b) {
-    assert(a.is_valid());
-    assert(b.is_valid());
-
-    double b_len2 = b.get_len2();
-    double c = (a.scalar_product(b)) / b_len2;
-    return a - b * c;
-}
-
-
-
 // LINE
 template<arithmetic T, std::size_t N>
 class gm_line {};
@@ -431,6 +401,29 @@ public:
     friend double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
 };
 
+
+template<>
+class gm_line<double, 2> {
+    gm_vector<double, 2> start;
+    gm_vector<double, 2> direction;
+public:
+    bool is_valid() const { return start.is_valid() && direction.is_valid(); }
+
+    gm_line(const gm_vector<double, 2> &start, const gm_vector<double, 2> &direction):
+        start(start), direction(direction) { assert(is_valid()); }
+    
+    
+
+    gm_vector<double, 2> get_start() const { 
+        return start; 
+    }
+
+    gm_vector<double, 2> get_direction() const { 
+        return direction; 
+    }
+
+    friend double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
+};
 
 
 // SPHERE
@@ -478,5 +471,39 @@ public:
 
 // GENERAL FUNCTIONS
 double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
+
+
+template<typename T>
+inline gm_vector<T, 3> cord_mul(const gm_vector<T, 3> &a, const gm_vector<T, 3> &b) {
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    return gm_vector<T, 3>(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+inline gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val) {
+    assert(a.is_valid());
+
+    return gm_vector<double, 3>
+    (
+        std::pow(a.x, pow_val),
+        std::pow(a.y, pow_val),
+        std::pow(a.z, pow_val)
+    );
+}
+
+inline gm_vector<double, 3> get_ortogonal(gm_vector<double, 3> a, gm_vector<double, 3> b) {
+    assert(a.is_valid());
+    assert(b.is_valid());
+
+    double b_len2 = b.get_len2();
+    double c = (a.scalar_product(b)) / b_len2;
+    return a - b * c;
+}
+
+gm_vector<double, 2> get_lines_intersection(const gm_line<double, 2> &line_a, const gm_line<double, 2> &line_b);
+
+gm_vector<double, 2> get_ray_line_intersection(const gm_line<double, 2> &ray, const gm_line<double, 2> &line);
+
 
 #endif // GM_VECTOR_HPP
