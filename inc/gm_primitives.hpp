@@ -133,6 +133,13 @@ public:
         assert(other.is_valid());
         return x * other.x + y * other.y;
     }
+    T vector_product(const gm_vector<T, 2> &other) const {
+        assert(is_valid());
+        assert(other.is_valid());
+        
+        return x * other.y - y * other.x;
+    }
+
 
     inline T get_len2() {
         assert(is_valid());
@@ -391,7 +398,6 @@ public:
         return direction; 
     }
 
-    friend double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
 };
 
 
@@ -415,9 +421,13 @@ public:
     gm_vector<double, 2> get_direction() const { 
         return direction; 
     }
-
-    friend double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
 };
+
+
+
+double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> point);
+
+double get_dot_line_distance2(gm_line<double, 2> line, gm_vector<double, 2> point);
 
 
 // SPHERE
@@ -464,8 +474,6 @@ public:
 
 
 // GENERAL FUNCTIONS
-double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> dot);
-
 
 template<typename T>
 inline gm_vector<T, 3> cord_mul(const gm_vector<T, 3> &a, const gm_vector<T, 3> &b) {
@@ -523,6 +531,5 @@ inline std::ostream &operator<<(std::ostream &stream, const gm_line<double, 2> &
     stream << "gm_line2{" << line.get_start() << ", " << line.get_direction() << "}";
     return stream;
 }
-
 
 #endif // GM_VECTOR_HPP

@@ -6,13 +6,23 @@
 
 
 double get_dot_line_distance2(gm_line<double, 3> line, gm_vector<double, 3> point) {
-    gm_vector<double, 3> line_direction = line.direction;
+    gm_vector<double, 3> line_direction = line.get_direction();
 
-    gm_vector<double, 3> start_to_dot = point - line.start;
+    gm_vector<double, 3> start_to_dot = point - line.get_start();
     gm_vector<double, 3> vector_product_res = start_to_dot.vector_product(line_direction);
 
     return vector_product_res.get_len2() / line_direction.get_len2();
 }
+
+double get_dot_line_distance2(gm_line<double, 2> line, gm_vector<double, 2> point) {
+    gm_vector<double, 2> line_direction = line.get_direction();
+
+    gm_vector<double, 2> start_to_dot = point - line.get_start();
+    double vector_product_res = start_to_dot.vector_product(line_direction);
+
+    return std::fabs(vector_product_res) / line_direction.get_len2();
+}
+
 
 gm_vector<double, 2> get_lines_intersection(const gm_line<double, 2> &line_a, const gm_line<double, 2> &line_b) {
     double x1 = line_a.get_start().get_x();
