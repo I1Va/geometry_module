@@ -45,4 +45,28 @@ gm_vector<double, 2> get_ray_line_intersection(const gm_line<double, 2> &ray, co
     return gm_vector<double, 2>::POISON();
 }
 
+void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* n_roots) {
+    assert(n_roots);
+    assert(x1);
+    assert(x2);
+
+    double d = b * b - 4 * a * c;
+
+    if (std::fabs(d) < std::numeric_limits<double>::epsilon()) {
+        *n_roots = 1;
+        *x1 = -b / (2 * a);
+        *x2 = 0;
+        return;
+    }
+
+    if (d < 0) {
+        *n_roots = 0;
+        *x1 = *x2 = 0;
+        return;
+    }
+    
+    *n_roots = 2;
+    *x1 = (-b - std::sqrt(d)) / (2 * a);
+    *x2 = (-b + std::sqrt(d)) / (2 * a);
+}
 

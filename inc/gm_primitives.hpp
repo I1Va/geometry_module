@@ -7,6 +7,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <limits>
 #include <type_traits>
 
 // VECTOR
@@ -163,9 +164,7 @@ public:
         return poison_state; 
     }
 
-     bool is_poison() const { return poison_state; }
-
-
+    bool is_poison() const { return poison_state; }
 };
 
 template<typename T>
@@ -509,5 +508,6 @@ gm_vector<double, 2> get_lines_intersection(const gm_line<double, 2> &line_a, co
 
 gm_vector<double, 2> get_ray_line_intersection(const gm_line<double, 2> &ray, const gm_line<double, 2> &line);
 
+void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* n_roots);
 
 #endif // GM_VECTOR_HPP
