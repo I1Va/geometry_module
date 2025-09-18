@@ -32,13 +32,14 @@ public:
     gm_vector(gm_vector<U, 2> other):
         x(static_cast<T>(other.get_x())),
         y(static_cast<T>(other.get_y())),
-        valid_len2_state(other.get_valid_len2_state()),
+        valid_len2_state(false),
         poison_state(other.get_poison_state()),
-        len2(other.get_len2()) {}
+        len2(0) {}
 
     bool is_valid() const {
         if (valid_len2_state)
             return (x * x + y * y == len2);
+
         if (!poison_state && (std::isnan(x) || std::isnan(y)))
             return false;
         
@@ -120,7 +121,7 @@ public:
 
     gm_vector<double, 2> rotate(const double radians) const {
         assert(is_valid());
-
+        
         double x_new = x * std::cos(radians) - y * std::sin(radians);
         double y_new = x * std::sin(radians) + y * std::cos(radians);
 
@@ -136,7 +137,7 @@ public:
     inline T get_len2() {
         assert(is_valid());
 
-        if (valid_len2_state) {
+        if (!valid_len2_state) {
             len2 = x * x + y * y;
             valid_len2_state = true;
         }
@@ -183,7 +184,7 @@ public:
         x(static_cast<T>(other.get_x())),
         y(static_cast<T>(other.get_y())),
         z(static_cast<T>(other.get_z())),
-        valid_len2_state(other.get_valid_len2_state()),
+        valid_len2_state(false),
         poison_state(other.get_poison_state()) {};
 
     bool is_valid() const {
@@ -367,15 +368,6 @@ public:
     friend inline gm_vector<double, 3> cord_pow(const gm_vector<double, 3> &a, const double pow_val);
 };
 
-
-template<typename T>
-inline std::ostream &operator<<(std::ostream &stream, const gm_vector<T, 3> &vector) {
-    assert(vector.is_valid());
-
-    stream << "gm_vector3 {" << vector.x << ", " << vector.y << ", " << vector.z << "}\n";
-    return stream;
-}
-
 // LINE
 template<arithmetic T, std::size_t N>
 class gm_line {};
@@ -391,8 +383,7 @@ public:
     
     bool is_valid() const { return start.is_valid() && direction.is_valid(); }
 
-    gm_vector<double, 3> get_start() const { 
-        
+    gm_vector<double, 3> get_start() const {  
         return start; 
     }
 
@@ -509,5 +500,29 @@ gm_vector<double, 2> get_lines_intersection(const gm_line<double, 2> &line_a, co
 gm_vector<double, 2> get_ray_line_intersection(const gm_line<double, 2> &ray, const gm_line<double, 2> &line);
 
 void solveQuadratic(double a, double b, double c, double* x1, double* x2, int* n_roots);
+
+
+template<typename T>
+inline std::ostream &operator<<(std::ostream &stream, const gm_vector<T, 3> &vector) {
+    stream << "vec3{" << vector.get_x() << ", " << vector.get_y() << ", " << vector.get_z() << "}";
+    return stream;
+}
+
+template<typename T>
+inline std::ostream &operator<<(std::ostream &stream, const gm_vector<T, 2> &vector) {
+    stream << "vec2{" << vector.get_x() << ", " << vector.get_y() << "}";
+    return stream;
+}
+
+inline std::ostream &operator<<(std::ostream &stream, const gm_line<double, 3> &line) {
+    stream << "line3{" << line.get_start() << ", " << line.get_direction() << "}";
+    return stream;
+}
+
+inline std::ostream &operator<<(std::ostream &stream, const gm_line<double, 2> &line) {
+    stream << "gm_line2{" << line.get_start() << ", " << line.get_direction() << "}";
+    return stream;
+}
+
 
 #endif // GM_VECTOR_HPP
