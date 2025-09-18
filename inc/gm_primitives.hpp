@@ -163,6 +163,9 @@ public:
         return poison_state; 
     }
 
+     bool is_poison() const { return poison_state; }
+
+
 };
 
 template<typename T>
@@ -383,18 +386,18 @@ class gm_line<double, 3> {
     gm_vector<double, 3> start;
     gm_vector<double, 3> direction;
 public:
+    gm_line(): start({0, 0}), direction({0, 0}) {};
     gm_line(const gm_vector<double, 3> &start, const gm_vector<double, 3> &direction):
-        start(start), direction(direction) {}
+        start(start), direction(direction) { assert(is_valid()); }
     
     bool is_valid() const { return start.is_valid() && direction.is_valid(); }
 
     gm_vector<double, 3> get_start() const { 
-        assert(is_valid());
+        
         return start; 
     }
 
     gm_vector<double, 3> get_direction() const { 
-        assert(is_valid());
         return direction; 
     }
 
@@ -409,6 +412,7 @@ class gm_line<double, 2> {
 public:
     bool is_valid() const { return start.is_valid() && direction.is_valid(); }
 
+    gm_line(): start({0, 0}), direction({0, 0}) {};
     gm_line(const gm_vector<double, 2> &start, const gm_vector<double, 2> &direction):
         start(start), direction(direction) { assert(is_valid()); }
     
