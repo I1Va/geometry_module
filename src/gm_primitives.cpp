@@ -36,7 +36,7 @@ gm_vector<double, 2> get_lines_intersection(const gm_line<double, 2> &line_a, co
 
     double det = dx1 * dy2 - dy1 * dx2;
 
-    if (det == 0) return gm_vector<double, 2>::POISON();
+    if (std::fabs(det) < std::numeric_limits<double>::epsilon()) return gm_vector<double, 2>::POISON();
 
     double t = ((x2 - x1) * dy2 - (y2 - y1) * dx2) / det;
     
@@ -47,9 +47,10 @@ gm_vector<double, 2> get_lines_intersection(const gm_line<double, 2> &line_a, co
 
 gm_vector<double, 2> get_ray_line_intersection(const gm_line<double, 2> &ray, const gm_line<double, 2> &line) {
     gm_vector<double, 2> intersection = get_lines_intersection(ray, line);
+    if (intersection.is_poison()) { return gm_vector<double, 2>::POISON(); }
     
     gm_vector<double, 2> intersection_direction = intersection - ray.get_start();
-    if ((ray.get_start() + ray.get_direction()).scalar_product(intersection_direction) > 0)
+    if ((ray.get_direction()).scalar_product(intersection_direction) > 0)
         return intersection;
 
     return gm_vector<double, 2>::POISON();
