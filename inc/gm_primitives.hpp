@@ -475,6 +475,21 @@ public:
 };
 
 
+template<arithmetic T>
+class gm_rect {};
+
+template<typename T>
+class gm_rect<T> {
+    T x, y, w, h;
+public:
+    gm_rect(T x, T y, T w, T h) : x(x), y(y), w(w), h(h) {};
+
+    bool contain_dot(const gm_vector<T, 2> &dot) {
+        return x <= dot.get_x() && dot.get_x() <= x + w &&
+               y <= dot.get_y() && dot.get_y() <= y + h;
+    }
+};
+
 
 // GENERAL FUNCTIONS
 
