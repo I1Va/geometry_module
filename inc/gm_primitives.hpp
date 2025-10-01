@@ -10,10 +10,46 @@
 #include <limits>
 #include <type_traits>
 
-// VECTOR
 
 template<typename T>
 concept arithmetic = std::integral<T> || std::floating_point<T>;
+
+
+// DOT
+template<arithmetic T, std::size_t N>  
+struct gm_dot {};
+
+template<typename T>
+struct gm_dot<T, 2> {
+    T x, y;
+
+    gm_dot(T x, T y): x(x), y(y) {}
+
+    gm_dot<T, 2> operator+(const gm_dot<T, 2> &other) const {
+        return gm_dot<T, 2>(x + other.x, y + other.y);
+    }
+
+    gm_dot<T, 2> operator-(const gm_dot<T, 2> &other) const {
+        return gm_dot<T, 2>(x - other.x, y - other.y);
+    }
+
+
+    gm_dot<T, 2> operator+=(const gm_dot<T, 2> &other) {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
+    gm_dot<T, 2> operator-=(const gm_dot<T, 2> &other) {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+};
+
+
+// VECTOR
+
 
 template<arithmetic T, std::size_t N>  
 class gm_vector {};
@@ -475,10 +511,11 @@ public:
 };
 
 
-template<arithmetic T>
-class gm_rect {};
 
 template<typename T>
+class gm_rect {};
+
+template<arithmetic T>
 class gm_rect<T> {
     T x, y, w, h;
 public:
@@ -489,6 +526,23 @@ public:
                y <= dot.get_y() && dot.get_y() <= y + h;
     }
 };
+
+
+
+// template<arithmetic T>
+// class gm_rect {};
+
+// template<typename T>
+// class gm_rect<T> {
+//     T x, y, w, h;
+// public:
+//     gm_rect(T x, T y, T w, T h) : x(x), y(y), w(w), h(h) {};
+
+//     bool contain_dot(const gm_vector<T, 2> &dot) {
+//         return x <= dot.get_x() && dot.get_x() <= x + w &&
+//                y <= dot.get_y() && dot.get_y() <= y + h;
+//     }
+// };
 
 
 // GENERAL FUNCTIONS
