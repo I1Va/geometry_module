@@ -25,11 +25,13 @@ class gm_vector<T, 2> {
     bool valid_len2_state;
     bool poison_state;
 public:
-    gm_vector(T x = 0, T y = 0): x(x), y(y), valid_len2_state(false), poison_state(false) {}
+    gm_vector(T x, T y): x(x), y(y), valid_len2_state(false), poison_state(false) {}
     explicit gm_vector(T cord): x(cord), y(cord), valid_len2_state(false), poison_state(false) {}
+    gm_vector(): x(0), y(0), valid_len2_state(false), poison_state(false) {};
 
     template<arithmetic U>
     gm_vector(gm_vector<U, 2> other):
+        
         x(static_cast<T>(other.get_x())),
         y(static_cast<T>(other.get_y())),
         valid_len2_state(false),
@@ -39,9 +41,12 @@ public:
     bool is_valid() const {
         if (valid_len2_state)
             return (x * x + y * y == len2);
+            
 
-        if (!poison_state && (std::isnan(x) || std::isnan(y)))
+        if (!poison_state && (std::isnan(x) || std::isnan(y))) {
             return false;
+        }
+           
         
         return true;
     }
@@ -183,8 +188,9 @@ class gm_vector<T, 3> {
     bool poison_state;
 
 public:
-    gm_vector(T x = 0, T y = 0, T z = 0): x(x), y(y), z(z), valid_len2_state(false), poison_state(false) {}
+    gm_vector(T x, T y, T z): x(x), y(y), z(z), valid_len2_state(false), poison_state(false) {}
     explicit gm_vector(T cord): x(cord), y(cord), z(cord), valid_len2_state(false), poison_state(false) {}
+    gm_vector(): x(0), y(0), z(0), valid_len2_state(false), poison_state(false) {};
 
     template<arithmetic U>
     gm_vector(const gm_vector<U, 3>& other):
@@ -384,7 +390,7 @@ class gm_line<double, 3> {
     gm_vector<double, 3> start;
     gm_vector<double, 3> direction;
 public:
-    gm_line(): start({0, 0}), direction({0, 0}) {};
+    gm_line(): start({0, 0, 0}), direction({0, 0, 0}) {};
     gm_line(const gm_vector<double, 3> &start, const gm_vector<double, 3> &direction):
         start(start), direction(direction) { assert(is_valid()); }
     
@@ -454,9 +460,6 @@ public:
         
         if ((sphere_ray_distance2 > radius2) || ((center - ray.get_start()).scalar_product(ray.get_direction()) < 0))
             return gm_vector<double, 3>::POISON();
-
-        if (sphere_ray_distance2 == radius2) return ray_start_to_center.get_len2() - radius2;
-        
         
         double ray_start_to_center_projection_len = std::sqrt(ray_start_to_center.get_len2() - sphere_ray_distance2);
         double radius_projection = std::sqrt(radius2 - sphere_ray_distance2);
