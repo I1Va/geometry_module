@@ -48,6 +48,11 @@ struct gm_dot<T, 2> {
     }
 };
 
+template<typename T>
+inline std::ostream &operator<<(std::ostream &stream, const gm_dot<T, 2> &dot) {
+    stream << "dot2{" << dot.x << ", " << dot.y << "}";
+    return stream;
+}
 
 // VECTOR
 
