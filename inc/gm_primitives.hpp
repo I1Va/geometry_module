@@ -26,6 +26,10 @@ struct gm_dot<T, 2> {
     gm_dot(T x, T y): x(x), y(y) {}
     gm_dot() = default;
 
+    gm_dot<T, 2> operator*(const T scalar) const {
+        return gm_dot<T, 2>(x * scalar, y * scalar);
+    }
+
     gm_dot<T, 2> operator+(const gm_dot<T, 2> &other) const {
         return gm_dot<T, 2>(x + other.x, y + other.y);
     }
